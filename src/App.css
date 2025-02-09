@@ -3,13 +3,20 @@
   margin: 0 auto;
   padding: 2rem;
   text-align: center;
+  background-color: #5B3F8D; /* Deep Bruised Purple */
+  border: 2px solid #D4C29A; /* Antique Gold border */
+  border-radius: 10px; /* Slightly rounded corners for a gothic touch */
 }
-
 
 .card {
   padding: 2em;
+  background-color: #1A1A1A; /* Very dark grey for card background */
+  border: 1px solid #8B2A2A; /* Aged Wine Red border */
+  border-radius: 8px; /* Rounded corners for a softer look */
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.5); /* Add shadow for depth */
 }
 
 .read-the-docs {
-  color: #888;
+  color: #D4C29A; /* Antique Gold for text */
+  font-style: italic; /* Italicize for emphasis */
 }

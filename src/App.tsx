@@ -8,11 +8,11 @@ const App: React.FC = () => {
     return (
         <Router>
             <div className="App">
-                <h1 className="text-3xl font-bold">BMP Image Processor</h1>
-                <div className="flex space-x-4">
-                    <Link to="/l1" className="btn">Convert to Grayscale</Link>
-                    <Link to="/l2" className="btn">Add Border</Link>
-                    <Link to="/l3" className="btn">Rotate Image</Link>
+                <h1 className="text-4xl font-bold text-antique-gold mb-6">BMP Image Processor</h1>
+                <div className="flex space-x-4 mb-4">
+                    <Link to="/l1" className="bg-antique-gold text-gray-900 py-2 px-4 rounded-md transition duration-300 hover:bg-gray-800">Convert to Grayscale</Link>
+                    <Link to="/l2" className="bg-antique-gold text-gray-900 py-2 px-4 rounded-md transition duration-300 hover:bg-gray-800">Add Border</Link>
+                    <Link to="/l3" className="bg-antique-gold text-gray-900 py-2 px-4 rounded-md transition duration-300 hover:bg-gray-800">Rotate Image</Link>
                 </div>
                 <Routes>
                     <Route path="/l1" element={<ImageProcessorL1 />} />
