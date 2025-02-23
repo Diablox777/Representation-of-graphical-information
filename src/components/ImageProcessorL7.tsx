@@ -87,10 +87,7 @@ const ImageProcessorL7: React.FC = () => {
         let bitIndex = 0;
 
         for (let i = 0; i < stego.length && bitIndex < payloadBits.length; i++) {
-            // For 6-bit mode, preserve the top 2 bits
-            let mask = bitsCount === 6 ? 0b11000000 : ~((1 << bitsCount) - 1);
-            
-            let newVal = stego[i] & mask;
+            let newVal = stego[i] & (~((1 << bitsCount) - 1));
             let embedVal = 0;
             for (let j = 0; j < bitsCount; j++) {
                 embedVal = (embedVal << 1) | ((bitIndex < payloadBits.length) ? payloadBits[bitIndex] : 0);
@@ -103,13 +100,10 @@ const ImageProcessorL7: React.FC = () => {
         return stego;
     };
 
-
     const extractPayload = (containerData: Uint8Array, bitsCount: number, dataLengthBits: number) => {
         const extractedBits: number[] = [];
         for (let i = 0; i < containerData.length && extractedBits.length < dataLengthBits; i++) {
-            // For 6-bit mode, mask out the top 2 bits
-            let val = bitsCount === 6 ? containerData[i] & 0b00111111 : containerData[i] & ((1 << bitsCount) - 1);
-            
+            let val = containerData[i] & ((1 << bitsCount) - 1);
             for (let j = bitsCount - 1; j >= 0 && extractedBits.length < dataLengthBits; j--) {
                 extractedBits.push((val >> j) & 1);
             }
@@ -127,7 +121,6 @@ const ImageProcessorL7: React.FC = () => {
 
         return result;
     };
-
 
     const handleEmbed = () => {
         try {
