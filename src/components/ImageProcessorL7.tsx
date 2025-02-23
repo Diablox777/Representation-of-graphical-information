@@ -55,15 +55,19 @@ const ImageProcessorL7: React.FC = () => {
     };
 
     const uint8ArrayToString = (arr: Uint8Array) => {
-        // Filter out null bytes and invalid UTF-8 sequences
-        const validBytes = arr.filter(byte => byte !== 0);
-        try {
-            return new TextDecoder('utf-8', { fatal: true }).decode(new Uint8Array(validBytes));
-        } catch (e) {
-            console.error('Text decoding error:', e);
-            return 'Extracted data contains invalid UTF-8 sequences';
+        // Convert bytes directly to string without UTF-8 validation
+        let str = '';
+        for (let i = 0; i < arr.length; i++) {
+            // Convert each byte to its ASCII/Unicode character
+            const char = String.fromCharCode(arr[i]);
+            // Skip null bytes and other non-printable characters
+            if (arr[i] >= 32 && arr[i] <= 126 || arr[i] >= 128) {
+                str += char;
+            }
         }
+        return str;
     };
+
 
 
     const embedPayload = (containerData: Uint8Array, payload: Uint8Array, bitsCount: number) => {
@@ -83,7 +87,10 @@ const ImageProcessorL7: React.FC = () => {
         let bitIndex = 0;
 
         for (let i = 0; i < stego.length && bitIndex < payloadBits.length; i++) {
-            let newVal = stego[i] & (~((1 << bitsCount) - 1));
+            // For 6-bit mode, preserve the top 2 bits
+            let mask = bitsCount === 6 ? 0b11000000 : ~((1 << bitsCount) - 1);
+            
+            let newVal = stego[i] & mask;
             let embedVal = 0;
             for (let j = 0; j < bitsCount; j++) {
                 embedVal = (embedVal << 1) | ((bitIndex < payloadBits.length) ? payloadBits[bitIndex] : 0);
@@ -96,10 +103,13 @@ const ImageProcessorL7: React.FC = () => {
         return stego;
     };
 
+
     const extractPayload = (containerData: Uint8Array, bitsCount: number, dataLengthBits: number) => {
         const extractedBits: number[] = [];
         for (let i = 0; i < containerData.length && extractedBits.length < dataLengthBits; i++) {
-            let val = containerData[i] & ((1 << bitsCount) - 1);
+            // For 6-bit mode, mask out the top 2 bits
+            let val = bitsCount === 6 ? containerData[i] & 0b00111111 : containerData[i] & ((1 << bitsCount) - 1);
+            
             for (let j = bitsCount - 1; j >= 0 && extractedBits.length < dataLengthBits; j--) {
                 extractedBits.push((val >> j) & 1);
             }
@@ -118,6 +128,7 @@ const ImageProcessorL7: React.FC = () => {
         return result;
     };
 
+
     const handleEmbed = () => {
         try {
             if (!containerFile || !textFile) {
@@ -134,13 +145,16 @@ const ImageProcessorL7: React.FC = () => {
                 throw new Error("Text file is too large for selected mode");
             }
 
-            const header = new Uint8Array(4);
+            // Use 8 bytes for header to avoid overflow
+            const header = new Uint8Array(8);
             const dv = new DataView(header.buffer);
-            dv.setUint32(0, textFile.byteLength, true);
+            // Store length as BigInt to handle large files
+            dv.setBigUint64(0, BigInt(textFile.byteLength), true);
 
             const payload = new Uint8Array(header.length + textFile.byteLength);
             payload.set(header, 0);
             payload.set(new Uint8Array(textFile), header.length);
+
 
             const stegoData = embedPayload(containerData, payload, bitsCount);
             const stegoBuffer = containerFile.slice(0);
@@ -183,10 +197,11 @@ const ImageProcessorL7: React.FC = () => {
             const bmp = parseBMP(stegoFile);
             const containerData = new Uint8Array(stegoFile, bmp.pixelOffset, bmp.rowSize * bmp.height);
 
-            const headerBits = 32;
+            const headerBits = 64; // 8 bytes = 64 bits
             const headerBytes = extractPayload(containerData, bitsCount, headerBits);
             const headerDV = new DataView(headerBytes.buffer);
-            const textLength = headerDV.getUint32(0, true);
+            const textLength = Number(headerDV.getBigUint64(0, true));
+
 
             const headerContainerBytes = Math.ceil(32 / bitsCount);
             const dataSlice = containerData.slice(headerContainerBytes);
