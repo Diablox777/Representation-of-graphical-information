@@ -1,3 +1,5 @@
+// В данном файле используется логика для 1-4 лабораторных. Начиная с 5-ой было принято решение писать логику непосредственно в ImageProcessor(5-8)
+
 export const processBmpToGrayscale = async (file: File): Promise<void> => {
     const reader = new FileReader();
     return new Promise((resolve, reject) => {
