@@ -186,7 +186,123 @@ function generateRandomPixel(data: Uint8Array, pos: number, bytesPerPixel: numbe
     }
 }
 
+export const processBmpFile = async (file: File): Promise<void> => {
+    const reader = new FileReader();
+    return new Promise((resolve, reject) => {
+        reader.onload = (e) => {
+            const arrayBuffer = e.target?.result as ArrayBuffer;
+            const dataView = new DataView(arrayBuffer);
+            
+            // Parse BMP header
+            const header = {
+                type: dataView.getUint16(0, true),
+                fileSize: dataView.getUint32(2, true),
+                pixelOffset: dataView.getUint32(10, true),
+                width: dataView.getInt32(18, true),
+                height: dataView.getInt32(22, true),
+                bpp: dataView.getUint16(28, true),
+                compression: dataView.getUint32(30, true),
+                colorsUsed: dataView.getUint32(46, true) || (1 << (dataView.getUint16(28, true) || 1))
+            };
+
+            // Validate format
+            if (header.type !== 0x4D42 || header.compression !== 0) {
+                reject(new Error('Unsupported BMP format!'));
+                return;
+            }
+
+            // Setup canvas
+            const canvas = document.getElementById('canvas') as HTMLCanvasElement;
+            const ctx = canvas.getContext('2d');
+            if (!ctx) {
+                reject(new Error('Could not get canvas context'));
+                return;
+            }
+
+            canvas.width = header.width;
+            canvas.height = Math.abs(header.height);
+            const imageData = ctx.createImageData(canvas.width, canvas.height);
+            
+            // Read palette
+            let palette = [];
+            if (header.bpp <= 8) {
+                const paletteOffset = 54;
+                const colors = header.bpp === 4 ? 16 : 256;
+                for (let i = 0; i < colors; i++) {
+                    palette.push({
+                        b: dataView.getUint8(paletteOffset + i * 4),
+                        g: dataView.getUint8(paletteOffset + i * 4 + 1),
+                        r: dataView.getUint8(paletteOffset + i * 4 + 2)
+                    });
+                }
+            }
+
+            // Read pixel data
+            const pixels = new Uint8Array(arrayBuffer, header.pixelOffset);
+            const bytesPerPixel = header.bpp === 4 ? 0.5 : header.bpp === 8 ? 1 : 3;
+            const rowSize = Math.floor((header.bpp * header.width + 31) / 32) * 4;
+
+            // Process pixels row by row
+            for (let y = header.height > 0 ? header.height - 1 : 0; 
+                 header.height > 0 ? y >= 0 : y < Math.abs(header.height); 
+                 header.height > 0 ? y-- : y++) {
+                
+                let rowOffset = y * rowSize;
+                
+                for (let x = 0; x < header.width; x++) {
+                    let r, g, b;
+                    
+                    if (header.bpp === 4) { // 16 colors
+                        const byte = pixels[rowOffset + Math.floor(x / 2)];
+                    const nibble = x % 2 === 0 ? byte >> 4 : byte & 0x0F;
+                    const color = palette[nibble] || { r: 0, g: 0, b: 0 };
+                    r = color.r;
+                    g = color.g;
+                    b = color.b;
+
+                    }
+                    else if (header.bpp === 8) { // 256 colors
+                    const index = pixels[rowOffset + x];
+                    const color = palette[index] || { r: 0, g: 0, b: 0 };
+                    r = color.r;
+                    g = color.g;
+                    b = color.b;
+
+                    }
+                    else if (header.bpp === 24) { // TrueColor
+                        const offset = rowOffset + x * 3;
+                        b = pixels[offset] || 0;
+                        g = pixels[offset + 1] || 0;
+                        r = pixels[offset + 2] || 0;
+
+                    }
+
+                    // Write to ImageData
+                    const canvasY = header.height > 0 ? header.height - 1 - y : y;
+                    const pos = (canvasY * canvas.width + x) * 4;
+                    imageData.data[pos] = r || 0;
+                    imageData.data[pos + 1] = g || 0;
+                    imageData.data[pos + 2] = b || 0;
+                    imageData.data[pos + 3] = 255; // Alpha channel
+
+                }
+            }
+
+            // Display on canvas
+            ctx.putImageData(imageData, 0, 0);
+            resolve();
+        };
+
+        reader.onerror = (error) => {
+            reject(error);
+        };
+
+        reader.readAsArrayBuffer(file);
+    });
+};
+
 export const processBmpRotation = async (file: File): Promise<void> => {
+
     const reader = new FileReader();
     return new Promise((resolve, reject) => {
         reader.onload = (e) => {
