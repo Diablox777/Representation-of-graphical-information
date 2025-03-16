@@ -18,6 +18,9 @@ const PCXToBMPConverter: React.FC = () => {
             setWidth(pcx.width);
             setHeight(pcx.height);
             const quantResult = quantizeImage(pcx);
+            drawImageToCanvas(pcx.width, pcx.height, pcx.imageData, 'originalCanvas');
+            drawImageToCanvas(pcx.width, pcx.height, quantResult.quantizedRGBA, 'quantizedCanvas');
+
             setQuantizedRGBA(quantResult.quantizedRGBA);
             const bmpFile = createBMP(pcx.width, pcx.height, quantResult.quantizedIndices, quantResult.palette);
             const blob = new Blob([bmpFile], { type: 'application/octet-stream' });
