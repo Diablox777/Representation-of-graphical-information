@@ -240,21 +240,25 @@ const PCXToBMPConverter: React.FC = () => {
     }
 
     return (
-        <div className="p-4">
-            <h1 className="text-2xl font-bold mb-4">Конвертер PCX (256 цветов) → BMP (16 цветов)</h1>
-            <p className="mb-2">Выберите 256‑цветный PCX файл:</p>
-            <input type="file" className="mb-4" accept=".pcx" onChange={handleFileChange} />
+        <div className="max-w-lg mx-auto bg-white shadow-lg rounded-lg p-6">
+            <h1 className="text-3xl font-bold text-center mb-4 text-blue-600">Конвертер PCX (256 цветов) → BMP (16 цветов)</h1>
+            <p className="mb-4 text-gray-700">Загрузите 256‑цветный PCX файл, чтобы конвертировать его в BMP формат с 16 цветами. После загрузки вы сможете скачать преобразованное изображение.</p>
+            <input type="file" className="mb-4 border border-gray-300 rounded p-2 w-full" accept=".pcx" onChange={handleFileChange} />
             <div className="mb-4">
-                <h2 className="text-xl">Исходное изображение</h2>
-                <canvas id="originalCanvas" className="border border-black"></canvas>
+                <h2 className="text-xl font-semibold">Исходное изображение</h2>
+                <canvas id="originalCanvas" className="border border-black w-full h-64"></canvas>
             </div>
             <div className="mb-4">
-                <h2 className="text-xl">Изображение после конвертирования</h2>
-                <canvas id="quantizedCanvas" className="border border-black"></canvas>
+                <h2 className="text-xl font-semibold">Изображение после конвертирования</h2>
+                <canvas id="quantizedCanvas" className="border border-black w-full h-64"></canvas>
             </div>
-            {downloadUrl && (
-                <a href={downloadUrl} download="converted_image.bmp" className="bg-blue-500 text-white py-2 px-4 rounded">Скачать BMP файл</a>
-            )}
+            <div className="flex justify-between">
+                {downloadUrl && (
+                    <a href={downloadUrl} download="converted_image.bmp" className="bg-blue-500 text-white py-2 px-4 rounded hover:bg-blue-600 transition">Скачать BMP файл</a>
+                )}
+                <button onClick={() => window.location.reload()} className="bg-red-500 text-white py-2 px-4 rounded hover:bg-red-600 transition">Сбросить</button>
+            </div>
+
         </div>
     );
 };
