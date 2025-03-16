@@ -1,4 +1,5 @@
-import React from 'react';
+import React, { useState } from 'react';
+import PCXToBMPConverter from './components/PCXToBMPConverter';
 import { BrowserRouter as Router, Route, Routes, Link } from 'react-router-dom';
 import ImageProcessorL1 from './components/ImageProcessorL1';
 import ImageProcessorL2 from './components/ImageProcessorL2';
@@ -23,6 +24,7 @@ const App: React.FC = () => {
                     <Link to="/l6" className="bg-antique-gold text-gray-900 py-2 px-4 rounded-md transition duration-300 hover:bg-gray-800">Lab 6</Link>
                     <Link to="/l7" className="bg-antique-gold text-gray-900 py-2 px-4 rounded-md transition duration-300 hover:bg-gray-800">Lab 7</Link>
                     <Link to="/l8" className="bg-antique-gold text-gray-900 py-2 px-4 rounded-md transition duration-300 hover:bg-gray-800">Lab 8</Link>
+                    <Link to="/rgr" className="bg-antique-gold text-gray-900 py-2 px-4 rounded-md transition duration-300 hover:bg-gray-800">RGR</Link>
                 </div>
                 <Routes>
                     <Route path="/l1" element={<ImageProcessorL1 />} />
@@ -33,6 +35,7 @@ const App: React.FC = () => {
                     <Route path="/l6" element={<ImageProcessorL6 />} />
                     <Route path="/l7" element={<ImageProcessorL7 />} />
                     <Route path="/l8" element={<PCXDecoder />} />
+                    <Route path="/rgr" element={<PCXToBMPConverter />} />
                 </Routes>
             </div>
         </Router>
